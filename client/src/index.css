@@ -6,9 +6,9 @@
   --color-rose: #F43F5E;
   --color-cyan: #06B6D4;
   --color-amber: #F5A524;
-  --color-deep: #111113;
-  --color-surface: #1A1A1E;
-  --color-border: #2A2A2E;
+  --color-deep: #18181B;
+  --color-surface: #202024;
+  --color-border: #2E2E32;
 }
 
 * {
@@ -39,8 +39,8 @@ body {
 }
 
 .glass {
-  background: #1A1A1E;
-  border: 1px solid #2A2A2E;
+  background: #202024;
+  border: 1px solid #2E2E32;
 }
 
 .glass-hover:hover {

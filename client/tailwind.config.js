@@ -4,9 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        deep: '#111113',
-        surface: '#1A1A1E',
-        border: '#2A2A2E',
+        deep: '#18181B',
+        surface: '#202024',
+        border: '#2E2E32',
         rose: {
           DEFAULT: '#F43F5E',
           50: '#FFF1F2',
