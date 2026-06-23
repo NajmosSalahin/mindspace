@@ -1,7 +1,7 @@
 {
-  "name": "mindspace-client",
-  "version": "1.0.0",
+  "name": "eventsphere-client",
   "private": true,
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,14 +9,48 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.6.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
-    "recharts": "^2.15.4"
+    "@hookform/resolvers": "^3.9.0",
+    "@radix-ui/react-avatar": "^1.1.0",
+    "@radix-ui/react-checkbox": "^1.1.1",
+    "@radix-ui/react-dialog": "^1.1.1",
+    "@radix-ui/react-dropdown-menu": "^2.1.1",
+    "@radix-ui/react-select": "^2.1.1",
+    "@radix-ui/react-slider": "^1.2.0",
+    "@radix-ui/react-switch": "^1.1.0",
+    "@radix-ui/react-tabs": "^1.1.0",
+    "@radix-ui/react-toast": "^1.2.1",
+    "@radix-ui/react-tooltip": "^1.1.2",
+    "@reduxjs/toolkit": "^2.2.7",
+    "@stripe/react-stripe-js": "^2.7.3",
+    "@stripe/stripe-js": "^4.0.0",
+    "axios": "^1.7.3",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "framer-motion": "^11.3.12",
+    "html5-qrcode": "^2.3.8",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.424.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.52.2",
+    "react-hot-toast": "^2.4.1",
+    "react-leaflet": "^4.2.1",
+    "react-qr-code": "^2.0.15",
+    "react-redux": "^9.3.0",
+    "react-router-dom": "^6.26.0",
+    "recharts": "^2.12.7",
+    "socket.io-client": "^4.7.5",
+    "tailwind-merge": "^2.4.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^6.0.2",
-    "vite": "^8.0.16"
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.41",
+    "tailwindcss": "^3.4.9",
+    "vite": "^5.4.0"
   }
 }

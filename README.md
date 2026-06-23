@@ -1,219 +1,127 @@
-# 🧠 MindSpace — Cognitive Load Manager
+# EventSphere — MERN Event Management Platform
 
-> *Treat your time and attention like a financial budget.*
+A production-grade event management platform built with the MERN stack. Features ticketing, payments, QR check-in, real-time notifications, and role-based dashboards for users, organizers, and admins.
 
-MindSpace is a full-stack MERN application that reframes productivity around **mental energy** rather than simple task lists. Every task carries a cognitive cost. Every break is a recovery investment. Your mind has a budget — MindSpace helps you spend it wisely.
+## Tech Stack
 
----
+**Frontend:** React 18 + Vite, TailwindCSS, Framer Motion, Redux Toolkit + RTK Query, React Hook Form + Zod, React Router v6, Stripe Elements, Socket.io-client, Recharts, react-qr-code
 
-## ✦ Feature Overview
+**Backend:** Node.js + Express.js, MongoDB + Mongoose, JWT auth, Nodemailer, Cloudinary + Multer, Socket.io, Stripe, PDFKit
 
-| Feature | Description |
-|---|---|
-| **Energy Budget** | Daily mental energy pool (100 units) that depletes as tasks are completed |
-| **Cognitive Load Scoring** | Each task rated 1–100 for mental cost with auto-detection from keywords |
-| **Smart Scheduling** | Algorithm orders tasks by load × priority × brain state multiplier |
-| **Brain State System** | 5 states (Sharp → Exhausted) that multiply your effective capacity |
-| **Context Switch Penalty** | Switching energy types adds 8–15% cognitive overhead |
-| **Cognitive Debt** | Deferred tasks accumulate "debt" that reduces tomorrow's budget |
-| **Adaptive Pomodoro** | Focus sessions auto-adjust length based on task load & brain state |
-| **Energy Recovery** | Timed breaks restore energy with diminishing-returns scaling |
-| **Analytics Dashboard** | Weekly energy trends, type breakdowns, priority completion rates |
-| **Ambient Sound** | Web Audio API white noise for focus sessions |
-
----
-
-## 🚀 Quick Start
+## Setup
 
 ### Prerequisites
 - Node.js 18+
 - MongoDB (local or Atlas)
+- Cloudinary account
+- Stripe account (test mode)
+- SMTP email account (Ethereal for dev)
 
 ### 1. Clone & Install
 
 ```bash
-# Install server deps
-cd mindspace/server
-cp .env.example .env      # edit MONGODB_URI and JWT_SECRET
+# Server
+cd server
+cp .env.example .env
 npm install
 
-# Install client deps
+# Client
 cd ../client
+cp .env.example .env
 npm install
 ```
 
-### 2. Configure Environment
+### 2. Environment Variables
 
-Edit `server/.env`:
-
+**Server `server/.env`:**
 ```
-MONGODB_URI=mongodb://localhost:27017/mindspace
-JWT_SECRET=change_this_to_a_long_random_string
-PORT=5001
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/eventsphere
+JWT_ACCESS_SECRET=your-secret
+JWT_REFRESH_SECRET=your-secret
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+SMTP_HOST=smtp.ethereal.email
+SMTP_PORT=587
+SMTP_USER=...
+SMTP_PASS=...
 CLIENT_URL=http://localhost:5173
 ```
 
-### 3. Run
+**Client `client/.env`:**
+```
+VITE_API_URL=http://localhost:5000/api
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+VITE_SOCKET_URL=http://localhost:5000
+```
 
-Open two terminals:
+### 3. Seed Database
 
 ```bash
-# Terminal 1 — API server
+cd server
+npm run seed
+```
+
+### 4. Run
+
+```bash
+# Terminal 1 - Server
 cd server && npm run dev
 
-# Terminal 2 — React frontend
+# Terminal 2 - Client
 cd client && npm run dev
 ```
 
-Then open **http://localhost:5173**
+### Default Accounts (after seed)
 
----
-
-## 🏗 Architecture
-
-```
-mindspace/
-├── server/                     # Express + MongoDB backend
-│   ├── server.js               # Entry point, middleware, routes
-│   ├── models/
-│   │   ├── User.js             # Energy profile, brain state, cognitive debt
-│   │   ├── Task.js             # Cognitive load, energy type, defer system
-│   │   └── EnergyLog.js        # Daily energy tracking & performance scores
-│   ├── middleware/
-│   │   └── auth.js             # JWT verification + daily energy reset
-│   └── routes/
-│       ├── auth.js             # Register, login, /me, brain-state
-│       ├── tasks.js            # CRUD + complete/defer/start with engine
-│       ├── energy.js           # Recovery, budget config
-│       └── analytics.js        # Overview stats, trends, insights
-│
-└── client/                     # Vite + React 18 frontend
-    └── src/
-        ├── App.jsx             # Router, layout, toast system
-        ├── index.css           # Full design system (tokens, animations)
-        ├── api/client.js       # Axios + JWT interceptors
-        ├── context/
-        │   └── MindSpaceContext.jsx  # Global state (useReducer)
-        └── components/
-            ├── Auth/AuthScreen.jsx          # Neural canvas + login/register
-            ├── Layout/Sidebar.jsx           # Nav, energy bar, brain picker, breaks
-            ├── Dashboard/
-            │   ├── Dashboard.jsx            # Main overview
-            │   ├── EnergyGauge.jsx          # SVG circular gauge
-            │   └── (BrainStateSelector)     # Embedded in sidebar
-            ├── Tasks/
-            │   ├── TaskManager.jsx          # Full task list, filters, sorts
-            │   ├── TaskCard.jsx             # Load bar, type icon, actions
-            │   └── AddTaskModal.jsx         # 4-step creation wizard
-            ├── FocusMode/FocusMode.jsx      # Fullscreen adaptive timer
-            └── Analytics/Analytics.jsx      # Charts (recharts) + insights
-```
-
----
-
-## 🧮 Cognitive Load Engine
-
-### Scheduling Algorithm (server/routes/tasks.js)
-
-Tasks are scored and ordered by:
-
-```
-score = cognitiveLoad × priorityWeight × brainStateMultiplier
-```
-
-Brain state multipliers:
-- ⚡ Sharp     → 1.20×
-- 🎯 Focused   → 1.05×
-- 🧠 Normal    → 1.00×
-- 😑 Tired     → 0.75×
-- 💀 Exhausted → 0.50×
-
-### Context Switch Penalty
-
-Switching between incompatible energy types adds overhead:
-
-| Switch | Penalty |
-|---|---|
-| Deep Work ↔ Social | +15 units |
-| Creative ↔ Admin   | +15 units |
-| Any other switch   | +8 units  |
-
-### Cognitive Debt
-
-Each task deferral generates debt: `load × 0.15 × deferCount`
-
-Debt accumulates on the user and is subtracted from tomorrow's budget (capped at 20 units penalty). Debt recovers 5 units/day naturally, or faster with long breaks.
-
-### Adaptive Pomodoro (FocusMode)
-
-| Cognitive Load | Focus Session | Break |
+| Role | Email | Password |
 |---|---|---|
-| 70–100 | 25 min × brain adj. | 10 min |
-| 40–69  | 35 min × brain adj. | 7 min  |
-| 1–39   | 45 min × brain adj. | 5 min  |
+| Admin | admin@eventsphere.com | password123 |
+| Organizer | alice.johnson@eventsphere.com | password123 |
+| User | kate.lee@example.com | password123 |
 
----
+## Project Structure
 
-## 🎨 Design System
-
-| Token | Value |
-|---|---|
-| Background | `#04040D` (void black) |
-| Surface | `#0C0C22` |
-| Primary Accent | `#3DFF8F` (phosphor green) |
-| Secondary | `#00D4FF` (electric cyan) |
-| Warning | `#FFB443` (amber) |
-| Danger | `#FF4B6E` (neon red) |
-| Display Font | Syne (800) |
-| Body Font | Outfit |
-| Data Font | JetBrains Mono |
-
----
-
-## 📡 API Reference
-
-### Auth
 ```
-POST   /api/auth/register      { name, email, password }
-POST   /api/auth/login         { email, password }
-GET    /api/auth/me            → user profile
-PATCH  /api/auth/brain-state   { brainState }
+├── client/              # React frontend
+│   └── src/
+│       ├── pages/       # All page components
+│       ├── layouts/     # MainLayout, AuthLayout, DashboardLayout
+│       ├── redux/       # Store, slices, RTK Query services
+│       ├── services/    # Axios instance with interceptors
+│       ├── routes/      # ProtectedRoute, role guards
+│       ├── hooks/       # useSocket
+│       ├── utils/       # formatters
+│       └── constants/   # categories, roles, enums
+└── server/              # Express backend
+    ├── controllers/     # Route handlers
+    ├── models/          # Mongoose schemas (14 models)
+    ├── routes/          # Express routers (13 route groups)
+    ├── middleware/      # auth, authorize, upload, validate, error handler
+    ├── services/        # email, socket, cloudinary
+    ├── config/          # db, cloudinary, stripe
+    ├── utils/           # JWT tokens
+    ├── validators/      # express-validator schemas
+    └── scripts/         # seed.js (50 events, 20 users, 10 organizers)
 ```
 
-### Tasks
-```
-GET    /api/tasks              ?status= &energyType= &sort=smart
-POST   /api/tasks              { title, cognitiveLoad, energyType, estimatedDuration, ... }
-PATCH  /api/tasks/:id          (partial update)
-POST   /api/tasks/:id/start    → sets in_progress
-POST   /api/tasks/:id/complete { actualDuration }
-POST   /api/tasks/:id/defer    → increments debt
-DELETE /api/tasks/:id
-```
+## Features
 
-### Energy
-```
-GET    /api/energy             → current energy state
-POST   /api/energy/recover     { minutes }
-PATCH  /api/energy/budget      { dailyBudget, recoveryRate, peakHour }
-```
-
-### Analytics
-```
-GET    /api/analytics/overview ?days=7|14|30
-```
-
----
-
-## 🔮 Extending MindSpace
-
-Ideas for next features:
-- **AI Load Prediction** — Use Claude API to estimate cognitive cost from task descriptions
-- **Calendar Integration** — Sync with Google Calendar to block off focus time
-- **Team Mode** — Share cognitive load visibility with a team
-- **Wearable Sync** — Import HRV/sleep data for automated brain state detection
-- **Weekly Review** — Auto-generated Sunday retrospectives
-
----
-
-*Built with the MERN stack. Designed for humans.*
+- JWT auth with auto-refresh via Axios interceptors
+- Email verification, password reset (Nodemailer)
+- Stripe payment with webhooks
+- QR code ticket generation and scanner check-in
+- Real-time notifications (Socket.io)
+- PDF certificate generation (PDFKit)
+- Role-based dashboards (User / Organizer / Admin)
+- Glassmorphism dark theme with Framer Motion animations
+- Full-text search, filtering, pagination, sort
+- Event creation wizard with multi-step form
+- Coupon/discount system
+- Waitlist management
+- Review & rating system
+- Survey creation with response analytics
+- 92 REST API endpoints
