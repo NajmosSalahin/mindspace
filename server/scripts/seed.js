@@ -34,6 +34,13 @@ const eventNames = {
   Other: ['Comedy Night', 'Food Festival', 'Book Fair', 'Film Screening', 'Art Exhibition', 'Charity Gala', 'Fashion Show', 'Cultural Festival'],
 };
 
+const accounts = [
+  { name: 'Admin', email: 'admin@eventsphere.com', password: 'Esphere_Admin!7', role: 'admin' },
+  { name: 'Organizer', email: 'organizer@eventsphere.com', password: 'Org$Event42', role: 'organizer' },
+  { name: 'Alice', email: 'user@eventsphere.com', password: 'User@Live9', role: 'user' },
+  { name: 'Bob', email: 'member@eventsphere.com', password: 'Member#Tick3', role: 'user' },
+];
+
 async function seed() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
@@ -46,41 +53,20 @@ async function seed() {
       Coupon.deleteMany({}),
     ]);
 
-    const admin = await User.create({
-      name: 'Admin User',
-      email: 'admin@eventsphere.com',
-      password: 'password123',
-      role: 'admin',
-      isVerified: true,
-    });
-    console.log(`Admin created: ${admin.email}`);
-
-    const organizers = [];
-    const organizerNames = ['Alice Johnson', 'Bob Smith', 'Carol Williams', 'David Brown', 'Eve Davis', 'Frank Miller', 'Grace Wilson', 'Henry Moore', 'Ivy Taylor', 'Jack Anderson'];
-    for (const name of organizerNames) {
-      const email = `${name.toLowerCase().replace(' ', '.')}@eventsphere.com`;
-      const org = await User.create({
-        name, email, password: 'password123', role: 'organizer', isVerified: true,
-        bio: `Experienced event organizer with a passion for creating memorable experiences.`,
-      });
-      organizers.push(org);
+    const createdUsers = [];
+    for (const acc of accounts) {
+      const user = await User.create({ ...acc, isVerified: true });
+      createdUsers.push(user);
+      console.log(`${acc.role}: ${acc.email}`);
     }
-    console.log(`${organizers.length} organizers created`);
 
-    const users = [];
-    const userNames = ['Kate Lee', 'Liam Wang', 'Mia Chen', 'Noah Kumar', 'Olivia Patel', 'Peter Kim', 'Quinn Singh', 'Rose Thompson', 'Sam Garcia', 'Tina Martinez'];
-    for (const name of userNames) {
-      const email = `${name.toLowerCase().replace(' ', '.')}@example.com`;
-      const user = await User.create({ name, email, password: 'password123', role: 'user', isVerified: true });
-      users.push(user);
-    }
-    console.log(`${users.length} users created`);
+    const admin = createdUsers[0];
+    const organizer = createdUsers[1];
 
     await Category.create(categories);
 
     const events = [];
     for (let i = 0; i < 50; i++) {
-      const org = organizers[i % organizers.length];
       const catKeys = Object.keys(eventNames);
       const category = catKeys[i % catKeys.length];
       const names = eventNames[category];
@@ -104,7 +90,7 @@ async function seed() {
         title: `${title} ${2026 + (i % 3)}`,
         description: `Join us for an amazing ${category.toLowerCase()} event! This is a premier gathering featuring industry experts, networking opportunities, and unforgettable experiences. Don't miss out on this incredible event in ${city}.`,
         category,
-        organizerId: org._id,
+        organizerId: organizer._id,
         venue,
         address,
         city,
@@ -134,9 +120,10 @@ async function seed() {
     console.log(`${coupons.length} coupons created`);
 
     console.log('\n--- Seed Complete ---');
-    console.log('Admin: admin@eventsphere.com / password123');
-    console.log('Organizers: e.g., alice.johnson@eventsphere.com / password123');
-    console.log('Users: e.g., kate.lee@example.com / password123');
+    console.log('Admin:    admin@eventsphere.com / Esphere_Admin!7');
+    console.log('Org:      organizer@eventsphere.com / Org$Event42');
+    console.log('User:     user@eventsphere.com / User@Live9');
+    console.log('Member:   member@eventsphere.com / Member#Tick3');
 
     process.exit(0);
   } catch (error) {
