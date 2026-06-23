@@ -6,7 +6,7 @@ A production-grade event management platform built with the MERN stack. Features
 
 **Frontend:** React 18 + Vite, TailwindCSS, Framer Motion, Redux Toolkit + RTK Query, React Hook Form + Zod, React Router v6, Stripe Elements, Socket.io-client, Recharts, react-qr-code
 
-**Backend:** Node.js + Express.js, MongoDB + Mongoose, JWT auth, Nodemailer, Cloudinary + Multer, Socket.io, Stripe, PDFKit
+**Backend:** Node.js + Express.js, MongoDB + Mongoose, JWT auth, Brevo (email), Cloudinary + Multer, Socket.io, Stripe, PDFKit
 
 ## Setup
 
@@ -80,8 +80,8 @@ cd client && npm run dev
 | Role | Email | Password |
 |---|---|---|
 | Admin | admin@eventsphere.com | password123 |
-| Organizer | alice.johnson@eventsphere.com | password123 |
-| User | kate.lee@example.com | password123 |
+| Organizer | organizer@eventsphere.com | password123 |
+| User | user@eventsphere.com | password123 |
 
 ## Project Structure
 
@@ -124,4 +124,4 @@ cd client && npm run dev
 - Waitlist management
 - Review & rating system
 - Survey creation with response analytics
-- 92 REST API endpoints
+- 90+ REST API endpoints

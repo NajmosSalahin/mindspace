@@ -95,6 +95,26 @@ export const removeFavorite = async (req, res, next) => {
   }
 };
 
+export const getOrganizers = async (req, res, next) => {
+  try {
+    const organizers = await User.find({ role: 'organizer', isActive: true })
+      .select('name email profileImage bio')
+      .sort({ name: 1 });
+    res.json({ success: true, data: organizers });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getFollowing = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).populate('following', 'name profileImage role');
+    res.json({ success: true, data: user.following });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getFavorites = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id).populate('favorites');
