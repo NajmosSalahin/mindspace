@@ -5,13 +5,15 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import App from './App';
 import { store } from './redux/store';
+import ErrorBoundary from './components/ErrorBoundary';
+import 'leaflet/dist/leaflet.css';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>
       <BrowserRouter>
-        <App />
+        <ErrorBoundary><App /></ErrorBoundary>
         <Toaster
           position="top-right"
           toastOptions={{

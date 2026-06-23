@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useUpdateProfileMutation, useChangePasswordMutation } from '../../redux/services/authService';
 import { updateUser } from '../../redux/slices/authSlice';
 import toast from 'react-hot-toast';
 
 export default function Profile() {
-  const { user } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [updateProfile, { isLoading }] = useUpdateProfileMutation();
   const [changePassword] = useChangePasswordMutation();
@@ -33,6 +33,28 @@ export default function Profile() {
       toast.error(err?.data?.message || 'Failed');
     }
   };
+
+  if (loading || !user) {
+    return (
+      <div className="max-w-2xl">
+        <div className="h-8 w-48 bg-white/10 rounded animate-pulse mb-6" />
+        <div className="glass rounded-2xl p-6 mb-6">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-16 h-16 rounded-full bg-white/10 animate-pulse" />
+            <div>
+              <div className="h-5 w-32 bg-white/10 rounded animate-pulse mb-2" />
+              <div className="h-4 w-48 bg-white/10 rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="h-10 w-full bg-white/10 rounded animate-pulse" />
+            <div className="h-20 w-full bg-white/10 rounded animate-pulse" />
+            <div className="h-10 w-full bg-white/10 rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl">

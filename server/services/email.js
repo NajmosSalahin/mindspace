@@ -1,4 +1,5 @@
 import axios from 'axios';
+import logger from './logger.js';
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
@@ -12,10 +13,10 @@ export const sendEmail = async ({ to, subject, html }) => {
       },
       { headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' } }
     );
-    console.log(`Email sent: ${res.data.messageId}`);
+    logger.info(`Email sent: ${res.data.messageId}`);
     return res.data;
   } catch (error) {
-    console.error('Email send error:', error.response?.data || error.message);
+    logger.error(`Email send error: ${error.response?.data?.message || error.message}`);
     throw error;
   }
 };
@@ -50,7 +51,10 @@ export const sendWelcomeEmail = async (email, name) => {
   return sendEmail({ to: email, subject: 'Welcome to EventSphere!', html });
 };
 
-export const sendTicketConfirmationEmail = async (email, name, eventTitle, qrCodeData) => {
+export const sendTicketConfirmationEmail = async (email, name, eventTitle, qrCodeData, qrImage) => {
+  const qrHtml = qrImage
+    ? `<img src="${qrImage}" alt="QR Code" style="width:200px;height:200px;display:block;margin:16px auto;" />`
+    : `<p style="color:rgba(255,255,255,0.4);font-size:12px;">QR Code: ${qrCodeData}</p>`;
   const html = `
     <div style="font-family:'DM Sans',sans-serif;background:#0A0F1E;padding:40px 20px;">
       <div style="max-width:480px;margin:auto;background:rgba(255,255,255,0.05);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:40px;">
@@ -58,7 +62,7 @@ export const sendTicketConfirmationEmail = async (email, name, eventTitle, qrCod
         <p style="color:rgba(255,255,255,0.6);font-size:14px;">${eventTitle}</p>
         <p style="color:rgba(255,255,255,0.8);font-size:14px;">Thank you ${name}, your ticket is confirmed. Show the QR code below at the event.</p>
         <div style="text-align:center;padding:20px;background:rgba(255,255,255,0.05);border-radius:12px;margin:16px 0;">
-          <p style="color:rgba(255,255,255,0.4);font-size:12px;">QR Code: ${qrCodeData}</p>
+          ${qrHtml}
         </div>
         <a href="${process.env.CLIENT_URL}/dashboard/tickets" style="display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff;text-decoration:none;border-radius:12px;font-weight:600;">View My Tickets</a>
       </div>

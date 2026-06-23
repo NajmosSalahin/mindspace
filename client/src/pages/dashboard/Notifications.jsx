@@ -28,7 +28,19 @@ export default function Notifications() {
     toast.success('All marked as read');
   };
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
+  if (loading) return (
+    <div>
+      <div className="h-8 w-48 bg-white/10 rounded animate-pulse mb-6" />
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="glass rounded-xl p-4">
+            <div className="h-4 w-3/4 bg-white/10 rounded animate-pulse mb-2" />
+            <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div>

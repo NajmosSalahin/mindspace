@@ -9,6 +9,7 @@ const ticketSchema = new mongoose.Schema(
       price: { type: Number, required: true },
     },
     qrCode: { type: String, unique: true },
+    qrImage: { type: String, default: '' },
     checkedIn: { type: Boolean, default: false },
     checkedInAt: { type: Date },
     orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },

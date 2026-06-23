@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import mongoose from 'mongoose';
+import QRCode from 'qrcode';
 import Ticket from '../models/Ticket.js';
 import Order from '../models/Order.js';
 import Event from '../models/Event.js';
@@ -65,11 +66,13 @@ export const purchaseTicket = async (req, res, next) => {
     const createdTickets = [];
     for (const tr of ticketRecords) {
       const qrCode = crypto.randomUUID();
+      const qrDataUrl = await QRCode.toDataURL(qrCode, { width: 300, margin: 2 });
       const ticket = await Ticket.create({
         userId: req.user._id,
         eventId: event._id,
         ticketType: { name: tr.type, price: tr.price },
         qrCode,
+        qrImage: qrDataUrl,
         orderId: order._id,
       });
       createdTickets.push(ticket);

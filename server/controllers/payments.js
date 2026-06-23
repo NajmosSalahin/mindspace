@@ -95,7 +95,7 @@ export const handleStripeWebhook = async (req, res, next) => {
         if (user && eventDoc) {
           const tickets = await Ticket.find({ orderId: order._id });
           for (const ticket of tickets) {
-            await sendTicketConfirmationEmail(user.email, user.name, eventDoc.title, ticket.qrCode);
+            await sendTicketConfirmationEmail(user.email, user.name, eventDoc.title, ticket.qrCode, ticket.qrImage);
           }
         }
         const Notification = (await import('../models/Notification.js')).default;

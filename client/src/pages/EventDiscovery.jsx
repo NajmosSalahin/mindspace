@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { useGetEventsQuery } from '../redux/services/eventService';
 import { formatDate, formatCurrency } from '../utils/formatters';
 import { CATEGORIES, CITIES } from '../constants';
@@ -8,6 +9,7 @@ import { CATEGORIES, CITIES } from '../constants';
 export default function EventDiscovery() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
+  const [mapView, setMapView] = useState(false);
 
   const filters = {
     search: searchParams.get('search') || '',
@@ -27,6 +29,8 @@ export default function EventDiscovery() {
     setSearchParams(params);
   };
 
+  const eventsWithCoords = data?.data?.filter((e) => e.coordinates?.lat && e.coordinates?.lng && (e.coordinates.lat !== 0 || e.coordinates.lng !== 0)) || [];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-8">
@@ -35,9 +39,17 @@ export default function EventDiscovery() {
           <h1 className="font-display text-4xl font-bold text-white mt-1 tracking-display">All events</h1>
           <p className="text-gray-600 text-sm mt-1">{data?.pagination?.total || 0} events found</p>
         </div>
-        <button onClick={() => setShowFilters(!showFilters)} className="lg:hidden bg-surface border border-border px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white transition">
-          {showFilters ? 'Hide filters' : 'Show filters'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setMapView(!mapView)}
+            className="bg-surface border border-border px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white transition flex items-center gap-2"
+          >
+            {mapView ? 'List view' : 'Map view'}
+          </button>
+          <button onClick={() => setShowFilters(!showFilters)} className="lg:hidden bg-surface border border-border px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white transition">
+            {showFilters ? 'Hide filters' : 'Show filters'}
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-8">
@@ -101,7 +113,37 @@ export default function EventDiscovery() {
 
         {/* Results */}
         <div className="flex-1">
-          {isLoading ? (
+          {mapView && eventsWithCoords.length > 0 ? (
+            <div className="glass rounded-2xl p-4 mb-4">
+              <div className="h-96 rounded-xl overflow-hidden">
+                <MapContainer
+                  center={[eventsWithCoords[0].coordinates.lat, eventsWithCoords[0].coordinates.lng]}
+                  zoom={4}
+                  scrollWheelZoom={true}
+                  className="h-full w-full"
+                  style={{ background: '#0A0F1E' }}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  {eventsWithCoords.map((event) => (
+                    <Marker key={event._id} position={[event.coordinates.lat, event.coordinates.lng]}>
+                      <Popup>
+                        <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13 }}>
+                          <strong>{event.title}</strong>
+                          <br />
+                          {event.venue}, {event.city}
+                          <br />
+                          <a href={`/events/${event._id}`} style={{ color: '#4F46E5' }}>View event →</a>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  ))}
+                </MapContainer>
+              </div>
+            </div>
+          ) : isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="bg-surface border border-border rounded-xl overflow-hidden animate-pulse">

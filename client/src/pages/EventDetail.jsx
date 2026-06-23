@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { useGetEventByIdQuery, useToggleWishlistMutation } from '../redux/services/eventService';
 import { formatDate, formatTime, formatCurrency } from '../utils/formatters';
 import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
+
+const mapCenter = (event) => {
+  const lat = event.coordinates?.lat;
+  const lng = event.coordinates?.lng;
+  if (lat && lng && (lat !== 0 || lng !== 0)) return [lat, lng];
+  return null;
+};
 
 function Countdown({ date }) {
   const [time, setTime] = useState({});
@@ -153,6 +161,24 @@ export default function EventDetail() {
                     </div>
                   </div>
                 </div>
+
+                {mapCenter(event) && (
+                  <div className="bg-surface border border-border rounded-xl p-6">
+                    <h2 className="font-display text-xl font-bold text-white tracking-display mb-4">Location</h2>
+                    <div className="h-48 rounded-xl overflow-hidden">
+                      <MapContainer center={mapCenter(event)} zoom={13} scrollWheelZoom={false} className="h-full w-full" style={{ background: '#0A0F1E' }}>
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <Marker position={mapCenter(event)}>
+                          <Popup>{event.venue}, {event.city}</Popup>
+                        </Marker>
+                      </MapContainer>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-2">{event.venue}, {event.address}, {event.city}</p>
+                  </div>
+                )}
 
                 {event.tags?.length > 0 && (
                   <div className="flex flex-wrap gap-2">
