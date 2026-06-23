@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --color-rose: #F43F5E;
+  --color-rose: #E84D39;
   --color-cyan: #06B6D4;
   --color-amber: #F5A524;
   --color-deep: #18181B;
@@ -44,19 +44,19 @@ body {
 }
 
 .glass-hover:hover {
-  border-color: rgba(244, 63, 94, 0.3);
-  box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.15);
+  border-color: rgba(232, 77, 57, 0.3);
+  box-shadow: 0 0 0 1px rgba(232, 77, 57, 0.15);
 }
 
 .gradient-btn {
-  background: #F43F5E;
+  background: #E84D39;
   color: #fff;
   transition: all 0.2s ease;
 }
 
 .gradient-btn:hover {
-  background: #E11D48;
-  box-shadow: 0 0 20px rgba(244, 63, 94, 0.25);
+  background: #D03D2A;
+  box-shadow: 0 0 20px rgba(232, 77, 57, 0.25);
 }
 
 .gradient-btn:active {
@@ -64,13 +64,13 @@ body {
 }
 
 .gradient-text {
-  color: #F43F5E;
+  color: #E84D39;
 }
 
 .gradient-mesh {
   background-image:
     radial-gradient(ellipse at 20% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(244, 63, 94, 0.06) 0%, transparent 60%);
+    radial-gradient(ellipse at 80% 20%, rgba(232, 77, 57, 0.06) 0%, transparent 60%);
 }
 
 .section-eyebrow {
@@ -78,7 +78,7 @@ body {
   font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: #F43F5E;
+  color: #E84D39;
 }
 
 .card-hover {
@@ -86,7 +86,7 @@ body {
 }
 
 .card-hover:hover {
-  border-color: rgba(244, 63, 94, 0.25);
+  border-color: rgba(232, 77, 57, 0.25);
   transform: translateY(-2px);
 }
 
