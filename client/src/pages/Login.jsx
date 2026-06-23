@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useLoginMutation } from '../redux/services/authService';
 import { setCredentials } from '../redux/slices/authSlice';
 import toast from 'react-hot-toast';
+import { Eye, EyeOff } from 'lucide-react';
 
 const schema = z.object({
   email: z.string().email('Valid email required'),
@@ -18,6 +19,7 @@ export default function Login() {
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
   const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async (data) => {
     try {
@@ -42,7 +44,21 @@ export default function Login() {
         </div>
         <div>
           <label className="font-mono text-[10px] uppercase tracking-widest text-rose block mb-1.5">Password</label>
-          <input type="password" {...register('password')} className="w-full bg-deep border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-rose/50 transition" placeholder="••••••••" />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              {...register('password')}
+              className="w-full bg-deep border border-border rounded-lg px-4 py-2.5 pr-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-rose/50 transition"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition"
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
           {errors.password && <p className="text-rose text-xs mt-1">{errors.password.message}</p>}
         </div>
         <div className="text-right">

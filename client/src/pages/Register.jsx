@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRegisterMutation } from '../redux/services/authService';
 import toast from 'react-hot-toast';
+import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -15,6 +17,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [register, { isLoading }] = useRegisterMutation();
   const { register: reg, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async (data) => {
     try {
@@ -43,7 +46,21 @@ export default function Register() {
         </div>
         <div>
           <label className="font-mono text-[10px] uppercase tracking-widest text-rose block mb-1.5">Password</label>
-          <input type="password" {...reg('password')} className="w-full bg-deep border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-rose/50 transition" placeholder="At least 6 characters" />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              {...reg('password')}
+              className="w-full bg-deep border border-border rounded-lg px-4 py-2.5 pr-10 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-rose/50 transition"
+              placeholder="At least 6 characters"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition"
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
           {errors.password && <p className="text-rose text-xs mt-1">{errors.password.message}</p>}
         </div>
         <button type="submit" disabled={isLoading} className="gradient-btn w-full py-2.5 rounded-lg text-sm font-medium">
