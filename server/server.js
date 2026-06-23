@@ -1,5 +1,3 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -11,8 +9,6 @@ import { Server } from 'socket.io';
 import connectDB from './config/db.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { globalRateLimiter } from './middleware/rateLimiter.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
@@ -68,13 +64,6 @@ app.use('/api/seed', seedRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'EventSphere API is running' });
 });
-
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-}
 
 app.use(notFound);
 app.use(errorHandler);
