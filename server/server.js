@@ -27,6 +27,7 @@ import surveyRoutes from './routes/surveys.js';
 import certificateRoutes from './routes/certificates.js';
 import adminRoutes from './routes/admin.js';
 import categoryRoutes from './routes/categories.js';
+import seedRoutes from './routes/seed.js';
 
 dotenv.config();
 
@@ -62,6 +63,7 @@ app.use('/api/surveys', surveyRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/seed', seedRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'EventSphere API is running' });

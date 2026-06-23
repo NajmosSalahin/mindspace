@@ -42,94 +42,99 @@ const accounts = [
 ];
 
 async function seed() {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('Connected to MongoDB');
+  await mongoose.connect(process.env.MONGODB_URI);
+  console.log('Connected to MongoDB');
 
-    await Promise.all([
-      User.deleteMany({}),
-      Event.deleteMany({}),
-      Category.deleteMany({}),
-      Coupon.deleteMany({}),
-    ]);
+  await Promise.all([
+    User.deleteMany({}),
+    Event.deleteMany({}),
+    Category.deleteMany({}),
+    Coupon.deleteMany({}),
+  ]);
 
-    const createdUsers = [];
-    for (const acc of accounts) {
-      const user = await User.create({ ...acc, isVerified: true });
-      createdUsers.push(user);
-      console.log(`${acc.role}: ${acc.email}`);
-    }
-
-    const admin = createdUsers[0];
-    const organizer = createdUsers[1];
-
-    await Category.create(categories);
-
-    const events = [];
-    for (let i = 0; i < 50; i++) {
-      const catKeys = Object.keys(eventNames);
-      const category = catKeys[i % catKeys.length];
-      const names = eventNames[category];
-      const title = names[i % names.length];
-      const city = cities[i % cities.length];
-      const venue = venues[i % venues.length];
-      const address = addresses[i % addresses.length];
-      const eventDate = new Date();
-      eventDate.setDate(eventDate.getDate() + (i % 60) + 1);
-      const priceTiers = [
-        { name: 'General', price: 0, quantity: 100 },
-        { name: 'VIP', price: 49.99, quantity: 30 },
-        { name: 'Premium', price: 99.99, quantity: 10 },
-      ];
-      const ticketTypes = priceTiers.map((t) => ({
-        ...t,
-        remaining: t.quantity,
-        description: `${t.name} admission ticket`,
-      }));
-      const event = await Event.create({
-        title: `${title} ${2026 + (i % 3)}`,
-        description: `Join us for an amazing ${category.toLowerCase()} event! This is a premier gathering featuring industry experts, networking opportunities, and unforgettable experiences. Don't miss out on this incredible event in ${city}.`,
-        category,
-        organizerId: organizer._id,
-        venue,
-        address,
-        city,
-        country: 'United States',
-        coordinates: { lat: 40.7128 + (Math.random() - 0.5) * 10, lng: -74.006 + (Math.random() - 0.5) * 10 },
-        banner: '',
-        tags: [category.toLowerCase(), city.toLowerCase(), '2026'],
-        status: i < 5 ? 'draft' : 'published',
-        date: eventDate,
-        startTime: '09:00',
-        endTime: '17:00',
-        capacity: 200,
-        ticketTypes,
-        isFeatured: i < 6,
-        viewCount: Math.floor(Math.random() * 5000),
-      });
-      events.push(event);
-    }
-    console.log(`${events.length} events created`);
-
-    const coupons = [
-      { code: 'WELCOME10', discountType: 'percent', discountValue: 10, maxUses: 100, usedCount: 0, expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
-      { code: 'FLAT5', discountType: 'fixed', discountValue: 5, maxUses: 50, usedCount: 0, expiryDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000) },
-      { code: 'VIP20', discountType: 'percent', discountValue: 20, maxUses: 25, usedCount: 0, expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) },
-    ];
-    await Coupon.create(coupons);
-    console.log(`${coupons.length} coupons created`);
-
-    console.log('\n--- Seed Complete ---');
-    console.log('Admin:    admin@eventsphere.com / Esphere_Admin!7');
-    console.log('Org:      organizer@eventsphere.com / Org$Event42');
-    console.log('User:     user@eventsphere.com / User@Live9');
-    console.log('Member:   member@eventsphere.com / Member#Tick3');
-
-    process.exit(0);
-  } catch (error) {
-    console.error('Seed error:', error);
-    process.exit(1);
+  const createdUsers = [];
+  for (const acc of accounts) {
+    const user = await User.create({ ...acc, isVerified: true });
+    createdUsers.push(user);
+    console.log(`${acc.role}: ${acc.email}`);
   }
+
+  const organizer = createdUsers[1];
+
+  await Category.create(categories);
+
+  const events = [];
+  for (let i = 0; i < 50; i++) {
+    const catKeys = Object.keys(eventNames);
+    const category = catKeys[i % catKeys.length];
+    const names = eventNames[category];
+    const title = names[i % names.length];
+    const city = cities[i % cities.length];
+    const venue = venues[i % venues.length];
+    const address = addresses[i % addresses.length];
+    const eventDate = new Date();
+    eventDate.setDate(eventDate.getDate() + (i % 60) + 1);
+    const priceTiers = [
+      { name: 'General', price: 0, quantity: 100 },
+      { name: 'VIP', price: 49.99, quantity: 30 },
+      { name: 'Premium', price: 99.99, quantity: 10 },
+    ];
+    const ticketTypes = priceTiers.map((t) => ({
+      ...t,
+      remaining: t.quantity,
+      description: `${t.name} admission ticket`,
+    }));
+    const event = await Event.create({
+      title: `${title} ${2026 + (i % 3)}`,
+      description: `Join us for an amazing ${category.toLowerCase()} event! This is a premier gathering featuring industry experts, networking opportunities, and unforgettable experiences. Don't miss out on this incredible event in ${city}.`,
+      category,
+      organizerId: organizer._id,
+      venue,
+      address,
+      city,
+      country: 'United States',
+      coordinates: { lat: 40.7128 + (Math.random() - 0.5) * 10, lng: -74.006 + (Math.random() - 0.5) * 10 },
+      banner: '',
+      tags: [category.toLowerCase(), city.toLowerCase(), '2026'],
+      status: i < 5 ? 'draft' : 'published',
+      date: eventDate,
+      startTime: '09:00',
+      endTime: '17:00',
+      capacity: 200,
+      ticketTypes,
+      isFeatured: i < 6,
+      viewCount: Math.floor(Math.random() * 5000),
+    });
+    events.push(event);
+  }
+  console.log(`${events.length} events created`);
+
+  const coupons = [
+    { code: 'WELCOME10', discountType: 'percent', discountValue: 10, maxUses: 100, usedCount: 0, expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
+    { code: 'FLAT5', discountType: 'fixed', discountValue: 5, maxUses: 50, usedCount: 0, expiryDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000) },
+    { code: 'VIP20', discountType: 'percent', discountValue: 20, maxUses: 25, usedCount: 0, expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) },
+  ];
+  await Coupon.create(coupons);
+  console.log(`${coupons.length} coupons created`);
+
+  return { users: createdUsers.length, events: events.length, categories: categories.length, coupons: coupons.length };
 }
 
-seed();
+export { seed };
+
+if (process.argv[1] && (process.argv[1].endsWith('seed.js') || process.argv[1].endsWith('seed'))) {
+  seed()
+    .then((result) => {
+      console.log('\n--- Seed Complete ---');
+      console.log('Admin:    admin@eventsphere.com / Esphere_Admin!7');
+      console.log('Org:      organizer@eventsphere.com / Org$Event42');
+      console.log('User:     user@eventsphere.com / User@Live9');
+      console.log('Member:   member@eventsphere.com / Member#Tick3');
+      console.log('Result:', result);
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('Seed error:', error);
+      process.exit(1);
+    });
+}
