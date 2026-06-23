@@ -4,6 +4,20 @@ import { motion } from 'framer-motion';
 import { useGetTrendingEventsQuery, useGetFeaturedEventsQuery } from '../redux/services/eventService';
 import { formatDate, formatCurrency } from '../utils/formatters';
 
+const _now = new Date();
+const _y = _now.getFullYear();
+const _m = _now.getMonth();
+const _d = _now.getDate();
+
+const DEMO_EVENTS = [
+  { _id: 'demo-1', title: 'Summer Music Festival', date: new Date(_y, _m, _d + 1).toISOString(), venue: 'Central Park', city: 'New York', description: 'An outdoor music festival featuring top artists from around the world. Three stages, food vendors, and art installations.', ticketTypes: [{ price: 89 }], category: 'Music' },
+  { _id: 'demo-2', title: 'Jazz & Blues Night', date: new Date(_y, _m, _d + 2).toISOString(), venue: 'Blue Note', city: 'New York', description: 'An evening of world-class jazz and blues performances in an intimate setting.', ticketTypes: [{ price: 45 }], category: 'Music' },
+  { _id: 'demo-3', title: 'Tech Summit 2026', date: new Date(_y, _m, _d + 3).toISOString(), venue: 'Pier 17', city: 'San Francisco', description: 'The biggest tech conference of the year featuring keynote speakers, workshops, and networking.', ticketTypes: [{ price: 299 }], category: 'Tech' },
+  { _id: 'demo-4', title: 'Modern Art Walk', date: new Date(_y, _m, _d + 4).toISOString(), venue: 'MoMA', city: 'New York', description: 'A curated walk through the most exciting contemporary art exhibitions.', ticketTypes: [{ price: 0 }], category: 'Art' },
+  { _id: 'demo-5', title: 'International Food Fest', date: new Date(_y, _m, _d + 5).toISOString(), venue: 'Barclays Center', city: 'Brooklyn', description: 'Taste cuisines from over 30 countries in one weekend.', ticketTypes: [{ price: 25 }], category: 'Food' },
+  { _id: 'demo-6', title: 'Indie Film Premiere', date: new Date(_y, _m, _d + 6).toISOString(), venue: 'Lincoln Center', city: 'New York', description: 'Exclusive premiere of the most anticipated indie film of the year.', ticketTypes: [{ price: 18 }], category: 'Art' },
+];
+
 function CalendarColumn({ event, day, dateNum, index }) {
   return (
     <motion.div
@@ -90,7 +104,7 @@ export default function Home() {
   const categories = ['Music', 'Tech', 'Sports', 'Art', 'Food', 'Business', 'Education', 'Gaming'];
 
   const calendarEvents = useMemo(() => {
-    const pool = featured?.data?.length > 0 ? featured.data : (trending?.data || []);
+    const pool = featured?.data?.length > 0 ? featured.data : (trending?.data?.length > 0 ? trending.data : DEMO_EVENTS);
     return pool.slice(0, 5);
   }, [featured, trending]);
 
@@ -104,7 +118,8 @@ export default function Home() {
     return new Date(dateStr).getDate();
   };
 
-  const heroEvent = featured?.data?.[0] || trending?.data?.[0];
+  const heroEvent = featured?.data?.[0] || trending?.data?.[0] || DEMO_EVENTS[0];
+  const trendingEvents = trending?.data?.length > 0 ? trending.data : DEMO_EVENTS;
 
   return (
     <div>
@@ -228,7 +243,7 @@ export default function Home() {
       )}
 
       {/* ── Trending ── */}
-      {trending?.data?.length > 0 && (
+      {trendingEvents.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -240,7 +255,7 @@ export default function Home() {
               <Link to="/events?sort=popular" className="font-mono text-[10px] uppercase tracking-wider text-gray-600 hover:text-amber-400 transition">View all</Link>
             </div>
             <div className="bg-surface border border-border rounded-xl p-3">
-              {trending.data.slice(0, 6).map((event) => (
+              {trendingEvents.slice(0, 6).map((event) => (
                 <TrendingRow key={event._id} event={event} />
               ))}
             </div>
