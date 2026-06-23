@@ -37,20 +37,21 @@ export default function DashboardLayout({ type = 'user' }) {
   if (!isAuthenticated) return null;
 
   const links = type === 'admin' ? adminLinks : type === 'organizer' ? organizerLinks : userLinks;
-  const basePath = type === 'admin' ? '/admin' : type === 'organizer' ? '/organizer' : '/dashboard';
 
   return (
-    <div className="min-h-screen bg-navy flex">
-      <aside className="hidden lg:flex flex-col w-64 glass border-r border-white/5 fixed left-0 top-16 bottom-0 overflow-y-auto p-4">
-        <nav className="space-y-1">
+    <div className="min-h-screen bg-deep flex">
+      <aside className="hidden lg:flex flex-col w-64 bg-surface border-r border-border fixed left-0 top-16 bottom-0 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-0.5">
           {links.map((link) => {
             const isActive = location.pathname === link.to;
             return (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition ${
-                  isActive ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${
+                  isActive
+                    ? 'bg-rose/10 text-rose'
+                    : 'text-gray-500 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,8 +62,8 @@ export default function DashboardLayout({ type = 'user' }) {
             );
           })}
         </nav>
-        <div className="mt-auto pt-4 border-t border-white/5">
-          <Link to="/" className="flex items-center gap-2 text-xs text-gray-500 hover:text-white transition">
+        <div className="p-3 border-t border-border">
+          <Link to="/" className="flex items-center gap-2 text-xs text-gray-600 hover:text-white transition">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>

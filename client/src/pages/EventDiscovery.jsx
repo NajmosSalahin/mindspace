@@ -28,41 +28,42 @@ export default function EventDiscovery() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-display text-4xl font-bold">Discover Events</h1>
-          <p className="text-gray-500 text-sm mt-1">{data?.pagination?.total || 0} events found</p>
+          <span className="section-eyebrow">Discovery</span>
+          <h1 className="font-display text-4xl font-bold text-white mt-1 tracking-display">All events</h1>
+          <p className="text-gray-600 text-sm mt-1">{data?.pagination?.total || 0} events found</p>
         </div>
-        <button onClick={() => setShowFilters(!showFilters)} className="lg:hidden glass px-4 py-2 rounded-xl text-sm">
-          {showFilters ? 'Hide Filters' : 'Show Filters'}
+        <button onClick={() => setShowFilters(!showFilters)} className="lg:hidden bg-surface border border-border px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white transition">
+          {showFilters ? 'Hide filters' : 'Show filters'}
         </button>
       </div>
 
       <div className="flex gap-8">
         {/* Filters */}
         <aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 shrink-0`}>
-          <div className="glass rounded-2xl p-5 space-y-5 sticky top-24">
+          <div className="bg-surface border border-border rounded-xl p-5 space-y-5 sticky top-24">
             <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wider mb-2 block">Search</label>
+              <label className="font-mono text-[10px] uppercase tracking-widest text-rose mb-2 block">Search</label>
               <input
                 value={filters.search}
                 onChange={(e) => setFilter('search', e.target.value)}
                 placeholder="Search events..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-deep border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-rose/50 transition"
               />
             </div>
             <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wider mb-2 block">Category</label>
-              <div className="flex flex-wrap gap-2">
+              <label className="font-mono text-[10px] uppercase tracking-widest text-rose mb-2 block">Category</label>
+              <div className="space-y-1">
                 {CATEGORIES.map((cat) => (
                   <button
                     key={cat.name}
                     onClick={() => setFilter('category', filters.category === cat.name ? '' : cat.name)}
-                    className={`text-xs px-3 py-1.5 rounded-lg border transition ${
+                    className={`block w-full text-left text-sm px-3 py-1.5 rounded-lg transition ${
                       filters.category === cat.name
-                        ? 'border-indigo-500 bg-indigo-500/20 text-indigo-400'
-                        : 'border-white/10 text-gray-400 hover:text-white hover:border-white/20'
+                        ? 'bg-rose/10 text-rose'
+                        : 'text-gray-500 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     {cat.name}
@@ -71,28 +72,28 @@ export default function EventDiscovery() {
               </div>
             </div>
             <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wider mb-2 block">City</label>
+              <label className="font-mono text-[10px] uppercase tracking-widest text-rose mb-2 block">City</label>
               <select
                 value={filters.city}
                 onChange={(e) => setFilter('city', e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-deep border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-rose/50 transition"
               >
-                <option value="">All Cities</option>
+                <option value="">All cities</option>
                 {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wider mb-2 block">Sort By</label>
+              <label className="font-mono text-[10px] uppercase tracking-widest text-rose mb-2 block">Sort by</label>
               <select
                 value={filters.sort}
                 onChange={(e) => setFilter('sort', e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-deep border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-rose/50 transition"
               >
                 <option value="date">Date: Soonest</option>
-                <option value="popular">Most Popular</option>
+                <option value="popular">Most popular</option>
                 <option value="newest">Newest</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
+                <option value="price-asc">Price: Low to high</option>
+                <option value="price-desc">Price: High to low</option>
               </select>
             </div>
           </div>
@@ -103,24 +104,24 @@ export default function EventDiscovery() {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="glass rounded-2xl overflow-hidden animate-pulse">
-                  <div className="h-36 bg-white/5" />
+                <div key={i} className="bg-surface border border-border rounded-xl overflow-hidden animate-pulse">
+                  <div className="h-36 bg-border" />
                   <div className="p-4 space-y-3">
-                    <div className="h-3 w-16 bg-white/5 rounded" />
-                    <div className="h-4 w-3/4 bg-white/5 rounded" />
-                    <div className="h-3 w-1/2 bg-white/5 rounded" />
+                    <div className="h-3 w-16 bg-border rounded" />
+                    <div className="h-4 w-3/4 bg-border rounded" />
+                    <div className="h-3 w-1/2 bg-border rounded" />
                   </div>
                 </div>
               ))}
             </div>
           ) : isError ? (
             <div className="text-center py-20">
-              <p className="text-gray-500">Failed to load events. Try again later.</p>
+              <p className="text-gray-600">Failed to load events. Try again later.</p>
             </div>
           ) : data?.data?.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-4xl mb-4">🔍</p>
-              <p className="text-gray-500">No events found. Try adjusting your filters.</p>
+              <p className="font-display text-6xl text-gray-800 mb-4">0</p>
+              <p className="text-gray-600">No events found. Try adjusting your filters.</p>
             </div>
           ) : (
             <>
@@ -128,32 +129,36 @@ export default function EventDiscovery() {
                 {data?.data?.map((event, i) => (
                   <motion.div
                     key={event._id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: (i % 6) * 0.05 }}
-                    whileHover={{ y: -5 }}
                   >
-                    <Link to={`/events/${event._id}`} className="glass glass-hover rounded-2xl overflow-hidden block h-full">
-                      <div className="h-36 bg-gradient-to-br from-indigo-500/20 to-violet-500/20 flex items-center justify-center">
+                    <Link
+                      to={`/events/${event._id}`}
+                      className="bg-surface border border-border rounded-xl overflow-hidden block card-hover group"
+                    >
+                      <div className="h-36 bg-gradient-to-br from-rose/5 to-cyan/5 flex items-center justify-center overflow-hidden">
                         {event.banner ? (
-                          <img src={event.banner} alt={event.title} className="w-full h-full object-cover" />
+                          <img src={event.banner} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                         ) : (
-                          <span className="text-3xl opacity-30">🎪</span>
+                          <span className="font-display text-4xl text-gray-800">ES</span>
                         )}
                       </div>
                       <div className="p-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-[10px] uppercase tracking-wider text-indigo-400 font-medium">{event.category}</span>
-                          {event.isFeatured && <span className="text-[10px] text-gold-400">★ Featured</span>}
+                          <span className="font-mono text-[10px] uppercase tracking-widest text-rose">{event.category}</span>
+                          {event.isFeatured && <span className="font-mono text-[10px] uppercase tracking-widest text-amber-400">Featured</span>}
                         </div>
-                        <h3 className="text-sm font-semibold mb-2 line-clamp-2">{event.title}</h3>
-                        <p className="text-xs text-gray-500 mb-1">{formatDate(event.date)}</p>
-                        <p className="text-xs text-gray-500 mb-3">{event.city} • {event.venue}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium gradient-text">
+                        <h3 className="text-sm font-semibold text-white leading-snug line-clamp-2">{event.title}</h3>
+                        <div className="mt-2 text-xs text-gray-600">
+                          <p>{formatDate(event.date)}</p>
+                          <p className="mt-0.5">{event.city} — {event.venue}</p>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+                          <span className="font-mono text-sm text-rose">
                             {event.ticketTypes?.some(t => t.price === 0) ? 'Free' : formatCurrency(event.ticketTypes?.[0]?.price || 0) + '+'}
                           </span>
-                          <span className="text-xs text-gray-500">{event.viewCount} views</span>
+                          <span className="font-mono text-[10px] text-gray-600">{event.viewCount} views</span>
                         </div>
                       </div>
                     </Link>
@@ -167,10 +172,10 @@ export default function EventDiscovery() {
                     <button
                       key={p}
                       onClick={() => setFilter('page', p.toString())}
-                      className={`w-8 h-8 rounded-lg text-xs font-medium transition ${
+                      className={`w-8 h-8 rounded-lg text-xs font-mono font-medium transition ${
                         filters.page === p
-                          ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
-                          : 'text-gray-500 hover:text-white hover:bg-white/5'
+                          ? 'bg-rose/10 text-rose border border-rose/30'
+                          : 'text-gray-600 hover:text-white hover:bg-white/5'
                       }`}
                     >
                       {p}
