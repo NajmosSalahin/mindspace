@@ -1,6 +1,6 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLogoutMutation } from '../redux/services/authService';
 import { logout } from '../redux/slices/authSlice';
 import { useSocket } from '../hooks/useSocket';
@@ -10,9 +10,21 @@ export default function MainLayout() {
   const { unreadCount } = useSelector((state) => state.notifications);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [doLogout] = useLogoutMutation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   useSocket();
+
+  const isHome = location.pathname === '/';
+
+  useEffect(() => {
+    if (!isHome) { setScrolled(true); return; }
+    const onScroll = () => setScrolled(window.scrollY > 64);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [isHome]);
 
   const handleLogout = async () => {
     await doLogout();
@@ -22,7 +34,13 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen bg-deep">
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-deep/95 backdrop-blur-lg border-b border-border">
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'bg-deep/95 backdrop-blur-lg border-b border-border'
+            : 'bg-transparent'
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="font-display text-2xl font-bold text-white tracking-display">
@@ -99,7 +117,7 @@ export default function MainLayout() {
         </div>
       </nav>
 
-      <main className="pt-16">
+      <main className={isHome ? '' : 'pt-16'}>
         <Outlet />
       </main>
 
@@ -108,7 +126,7 @@ export default function MainLayout() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
               <p className="font-display text-xl text-white tracking-display">EventSphere</p>
-              <p className="text-sm text-gray-600 mt-1">Discover events that move you.</p>
+              <p className="text-sm text-gray-600 mt-1">Where your next story begins.</p>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-600">
               <Link to="/about" className="hover:text-gray-400 transition">About</Link>

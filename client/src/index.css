@@ -5,8 +5,10 @@
 :root {
   --color-rose: #F43F5E;
   --color-cyan: #06B6D4;
-  --color-deep: #070A14;
-  --color-surface: #111827;
+  --color-amber: #F5A524;
+  --color-deep: #09090B;
+  --color-surface: #18181B;
+  --color-border: #27272A;
 }
 
 * {
@@ -20,7 +22,7 @@ html {
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   background-color: var(--color-deep);
   color: #fff;
   -webkit-font-smoothing: antialiased;
@@ -37,8 +39,8 @@ body {
 }
 
 .glass {
-  background: #111827;
-  border: 1px solid #1F2937;
+  background: #18181B;
+  border: 1px solid #27272A;
 }
 
 .glass-hover:hover {
@@ -93,19 +95,7 @@ body {
   color: #9CA3AF;
 }
 
-.announce-marquee {
-  animation: marquee 30s linear infinite;
-}
-
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .announce-marquee {
-    animation: none;
-  }
   html {
     scroll-behavior: auto;
   }

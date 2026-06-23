@@ -1,337 +1,300 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useGetTrendingEventsQuery, useGetFeaturedEventsQuery } from '../redux/services/eventService';
 import { formatDate, formatCurrency } from '../utils/formatters';
 
-function CountdownTimer({ date }) {
-  const [time, setTime] = useState({});
-  useEffect(() => {
-    const tick = () => {
-      const diff = new Date(date).getTime() - Date.now();
-      if (diff <= 0) return;
-      setTime({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / (1000 * 60)) % 60),
-        seconds: Math.floor((diff / 1000) % 60),
-      });
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [date]);
-
-  if (!time.days && !time.hours && !time.minutes) return null;
-
+function CalendarColumn({ event, day, dateNum, index }) {
   return (
-    <div className="flex gap-3 font-mono text-xs">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: 'easeOut' }}
+      className="flex flex-col"
+    >
       <div className="text-center">
-        <span className="text-lg font-semibold text-white block tabular-nums">{String(time.days || 0).padStart(2, '0')}</span>
-        <span className="text-gray-600 text-[10px] uppercase tracking-wider">days</span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-amber-400">{day}</span>
+        <p className="font-mono text-4xl sm:text-5xl font-semibold text-white mt-1 tabular-nums leading-none">
+          {dateNum}
+        </p>
       </div>
-      <span className="text-gray-700 self-start mt-1">:</span>
-      <div className="text-center">
-        <span className="text-lg font-semibold text-white block tabular-nums">{String(time.hours || 0).padStart(2, '0')}</span>
-        <span className="text-gray-600 text-[10px] uppercase tracking-wider">hrs</span>
-      </div>
-      <span className="text-gray-700 self-start mt-1">:</span>
-      <div className="text-center">
-        <span className="text-lg font-semibold text-white block tabular-nums">{String(time.minutes || 0).padStart(2, '0')}</span>
-        <span className="text-gray-600 text-[10px] uppercase tracking-wider">min</span>
-      </div>
-    </div>
+      <div className="w-8 h-px bg-border mx-auto my-4" />
+      {event ? (
+        <Link to={`/events/${event._id}`} className="group block text-center">
+          <p className="text-sm font-medium text-white group-hover:text-amber-400 transition leading-snug">
+            {event.title}
+          </p>
+          <p className="text-xs text-gray-600 mt-1.5 leading-relaxed">
+            {event.venue}, {event.city}
+          </p>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-amber-400/60 mt-2 group-hover:text-amber-400 transition">
+            Tickets
+          </p>
+        </Link>
+      ) : (
+        <div className="text-center">
+          <p className="text-xs text-gray-700 italic">TBA</p>
+        </div>
+      )}
+    </motion.div>
   );
 }
 
-const containerVariants = {
+function MonthBanner() {
+  const now = new Date();
+  const month = now.toLocaleDateString('en-US', { month: 'long' });
+  const year = now.getFullYear();
+  return <>{month} {year}</>;
+}
+
+function TrendingRow({ event }) {
+  const [timeLeft, setTimeLeft] = useState('');
+  useEffect(() => {
+    const tick = () => {
+      const diff = new Date(event.date).getTime() - Date.now();
+      if (diff <= 0) { setTimeLeft('Started'); return; }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      setTimeLeft(d > 0 ? `${d}d ${h}h` : `${h}h`);
+    };
+    tick();
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, [event.date]);
+
+  return (
+    <Link to={`/events/${event._id}`} className="group flex items-center gap-4 py-3 border-b border-border last:border-0 hover:bg-white/[0.02] -mx-3 px-3 rounded-lg transition">
+      <span className="font-mono text-xs text-gray-600 w-12 shrink-0 tabular-nums">{timeLeft}</span>
+      <span className="text-sm text-white group-hover:text-amber-400 transition flex-1 truncate">{event.title}</span>
+      <span className="text-xs text-gray-600 shrink-0">{event.city}</span>
+      <span className="font-mono text-xs text-amber-400/60 group-hover:text-amber-400 transition shrink-0">
+        {event.ticketTypes?.some(t => t.price === 0) ? 'Free' : formatCurrency(event.ticketTypes?.[0]?.price || 0)}
+      </span>
+    </Link>
+  );
+}
+
+const stagger = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
 };
-const itemVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
 export default function Home() {
-  const [searchTitle, setSearchTitle] = useState('');
   const { data: trending } = useGetTrendingEventsQuery();
   const { data: featured } = useGetFeaturedEventsQuery();
 
-  const categories = ['Tech', 'Music', 'Sports', 'Business', 'Education', 'Gaming', 'Workshop', 'Other'];
+  const categories = ['Music', 'Tech', 'Sports', 'Art', 'Food', 'Business', 'Education', 'Gaming'];
 
-  const marqueeEvents = trending?.data?.length > 0
-    ? [...trending.data, ...trending.data]
-    : [];
+  const calendarEvents = useMemo(() => {
+    const pool = featured?.data?.length > 0 ? featured.data : (trending?.data || []);
+    return pool.slice(0, 5);
+  }, [featured, trending]);
+
+  const getDay = (dateStr) => {
+    if (!dateStr) return '---';
+    return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+  };
+
+  const getDateNum = (dateStr) => {
+    if (!dateStr) return '--';
+    return new Date(dateStr).getDate();
+  };
+
+  const heroEvent = featured?.data?.[0] || trending?.data?.[0];
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative min-h-screen flex items-center gradient-mesh overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-deep pointer-events-none" />
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-            >
-              <span className="section-eyebrow">EventSphere</span>
-              <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.08] tracking-display mt-4">
-                Find your people.<br />Find your moment.
-              </h1>
-              <p className="text-gray-500 text-base sm:text-lg mt-6 max-w-lg leading-relaxed">
-                From tech conferences to underground shows — discover and book the events that actually matter to you.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 mt-8 max-w-lg">
-                <input
-                  value={searchTitle}
-                  onChange={(e) => setSearchTitle(e.target.value)}
-                  placeholder="Search events by title, city, or category..."
-                  className="flex-1 bg-surface border border-border rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-rose/50 transition"
-                />
-                <Link
-                  to={`/events?search=${encodeURIComponent(searchTitle)}`}
-                  className="gradient-btn px-6 py-3 rounded-lg text-sm font-medium text-center whitespace-nowrap"
-                >
-                  Explore
-                </Link>
-              </div>
-            </motion.div>
+      {/* ── Hero: Schedule Board ── */}
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-500/[0.02] via-transparent to-deep pointer-events-none" />
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center justify-between mb-16"
+          >
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-amber-400">EventSphere</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-gray-600">
+              <MonthBanner />
+            </span>
+          </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
-              className="hidden lg:block"
-            >
-              <div className="bg-surface border border-border rounded-xl p-6">
-                <span className="section-eyebrow">Next event</span>
-                {featured?.data?.[0] ? (
-                  <div className="mt-4">
-                    <p className="font-display text-2xl font-bold text-white mt-1">{featured.data[0].title}</p>
-                    <div className="mt-4 space-y-3">
-                      <div className="flex items-center gap-3 text-sm">
-                        <span className="text-rose font-mono text-xs">DATE</span>
-                        <span className="text-gray-400">{formatDate(featured.data[0].date)}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <span className="text-rose font-mono text-xs">VENUE</span>
-                        <span className="text-gray-400">{featured.data[0].venue}, {featured.data[0].city}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <span className="text-rose font-mono text-xs">FROM</span>
-                        <span className="text-gray-400">{featured.data[0].ticketTypes?.some(t => t.price === 0) ? 'Free' : formatCurrency(featured.data[0].ticketTypes?.[0]?.price || 0)}</span>
-                      </div>
-                    </div>
-                    <div className="mt-6 pt-6 border-t border-border">
-                      <CountdownTimer date={featured.data[0].date} />
-                    </div>
-                    <Link
-                      to={`/events/${featured.data[0]._id}`}
-                      className="mt-6 inline-flex items-center gap-2 text-sm text-rose hover:text-rose-400 transition"
-                    >
-                      Get tickets
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </Link>
-                  </div>
-                ) : (
-                  <p className="text-gray-600 text-sm mt-4">Loading featured event...</p>
-                )}
-              </div>
-            </motion.div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-10 lg:gap-x-4">
+            {Array.from({ length: 5 }).map((_, i) => {
+              const event = calendarEvents[i] || null;
+              const day = event ? getDay(event.date) : '---';
+              const dateNum = event ? getDateNum(event.date) : '--';
+              return (
+                <CalendarColumn key={i} event={event} day={day} dateNum={dateNum} index={i} />
+              );
+            })}
           </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="mt-16 text-center"
+          >
+            <Link
+              to="/events"
+              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-gray-600 hover:text-amber-400 transition"
+            >
+              Browse all events
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </motion.div>
         </div>
       </section>
 
-      {/* Marquee Ticker */}
-      <section className="-mt-16 relative z-20 overflow-hidden">
-        <div className="bg-surface border-y border-border py-4">
-          {marqueeEvents.length > 0 ? (
-            <div className="announce-marquee flex gap-12 whitespace-nowrap hover:[animation-play-state:paused]">
-              {Array.from({ length: 4 }).flatMap(() =>
-                (trending?.data || []).map((event) => (
-                  <Link
-                    key={event._id + Math.random()}
-                    to={`/events/${event._id}`}
-                    className="inline-flex items-center gap-4 shrink-0"
-                  >
-                    <span className="font-mono text-xs text-rose">{formatDate(event.date).split(',')[0]}</span>
-                    <span className="text-sm text-white font-medium">{event.title}</span>
-                    <span className="text-xs text-gray-600">{event.city}</span>
-                    <span className="text-gray-800">•</span>
-                  </Link>
-                ))
-              )}
-            </div>
-          ) : (
-            <div className="text-center text-sm text-gray-600">Loading upcoming events...</div>
-          )}
-        </div>
-      </section>
-
-      {/* Categories */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+      {/* ── Categories ── */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          variants={containerVariants}
+          variants={stagger}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
-          <span className="section-eyebrow">Browse by</span>
-          <h2 className="font-display text-3xl font-bold text-white mt-1 mb-8 tracking-display">Categories</h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-gray-600 mr-2">Categories</span>
             {categories.map((cat, i) => (
-              <motion.div key={cat} variants={itemVariants}>
+              <motion.span key={cat} variants={fadeUp}>
                 <Link
                   to={`/events?category=${cat}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface border border-border text-sm text-gray-400 hover:text-white hover:border-rose/30 hover:bg-rose/[0.03] transition card-hover"
+                  className="text-gray-500 hover:text-amber-400 transition"
                 >
-                  {cat}
+                  {cat}{i < categories.length - 1 ? null : ''}
                 </Link>
-              </motion.div>
+                {i < categories.length - 1 && (
+                  <span className="text-gray-800 mx-2">/</span>
+                )}
+              </motion.span>
             ))}
           </div>
         </motion.div>
       </section>
 
-      {/* Featured Events */}
-      {featured?.data?.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-            <span className="section-eyebrow">Curated picks</span>
-            <h2 className="font-display text-3xl font-bold text-white mt-1 mb-8 tracking-display">Featured events</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {featured.data.slice(0, 6).map((event) => (
-                <motion.div
-                  key={event._id}
-                  whileHover={{ y: -3 }}
-                  className="bg-surface border border-border rounded-xl overflow-hidden card-hover group"
-                >
-                  <div className="h-40 bg-gradient-to-br from-rose/5 to-cyan/5 flex items-center justify-center overflow-hidden">
-                    {event.banner ? (
-                      <img src={event.banner} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                    ) : (
-                      <span className="font-display text-5xl text-gray-800">ES</span>
-                    )}
+      {/* ── Featured ── */}
+      {heroEvent && (
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-amber-400">Featured</span>
+            <div className="mt-4 bg-surface border border-border rounded-xl overflow-hidden">
+              <div className="grid lg:grid-cols-5">
+                <div className="lg:col-span-2 h-48 lg:h-auto bg-gradient-to-br from-amber-500/10 to-violet-500/10 flex items-center justify-center overflow-hidden">
+                  {heroEvent.banner ? (
+                    <img src={heroEvent.banner} alt={heroEvent.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-display text-6xl text-gray-800">ES</span>
+                  )}
+                </div>
+                <div className="lg:col-span-3 p-6 lg:p-8 flex flex-col justify-center">
+                  <p className="font-mono text-xs text-amber-400 mb-2">
+                    {formatDate(heroEvent.date)} — {heroEvent.city}
+                  </p>
+                  <h2 className="font-display text-2xl lg:text-3xl font-bold text-white tracking-display">
+                    {heroEvent.title}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-3 line-clamp-2 leading-relaxed">
+                    {heroEvent.description}
+                  </p>
+                  <div className="flex items-center gap-4 mt-5">
+                    <Link
+                      to={`/events/${heroEvent._id}`}
+                      className="gradient-btn px-5 py-2 rounded-lg text-sm font-medium"
+                    >
+                      Get tickets
+                    </Link>
+                    <span className="font-mono text-xs text-gray-600">
+                      {heroEvent.venue} — {heroEvent.ticketTypes?.some(t => t.price === 0) ? 'Free' : formatCurrency(heroEvent.ticketTypes?.[0]?.price || 0) + '+'}
+                    </span>
                   </div>
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="font-mono text-[10px] uppercase tracking-widest text-rose">{event.category}</span>
-                      {event.isFeatured && (
-                        <span className="font-mono text-[10px] uppercase tracking-widest text-amber-400">Featured</span>
-                      )}
-                    </div>
-                    <h3 className="text-base font-semibold text-white leading-snug">{event.title}</h3>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-gray-600">
-                      <span>{formatDate(event.date)}</span>
-                      <span className="text-gray-800">•</span>
-                      <span>{event.city}</span>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-                      <span className="font-mono text-sm text-rose">
-                        {event.ticketTypes?.some(t => t.price === 0) ? 'Free' : formatCurrency(event.ticketTypes?.[0]?.price || 0) + '+'}
-                      </span>
-                      <span className="text-xs text-gray-600 group-hover:text-rose transition">View details →</span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </section>
-      )}
-
-      {/* Trending Now */}
-      {trending?.data?.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <span className="section-eyebrow">Popular</span>
-                <h2 className="font-display text-3xl font-bold text-white mt-1 tracking-display">Trending now</h2>
+                </div>
               </div>
-              <Link to="/events?sort=popular" className="text-sm text-gray-600 hover:text-rose transition">View all →</Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x scrollbar-none">
-              {trending.data.map((event) => (
-                <motion.div
-                  key={event._id}
-                  whileHover={{ y: -3 }}
-                  className="bg-surface border border-border rounded-xl overflow-hidden min-w-[260px] max-w-[260px] snap-start shrink-0 card-hover group"
-                >
-                  <div className="h-32 bg-gradient-to-br from-rose/5 to-cyan/5 flex items-center justify-center">
-                    {event.banner ? (
-                      <img src={event.banner} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                    ) : (
-                      <span className="font-display text-4xl text-gray-800">ES</span>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-rose">{event.category}</span>
-                    <h3 className="text-sm font-semibold text-white mt-1 line-clamp-2">{event.title}</h3>
-                    <div className="mt-3 flex items-center justify-between">
-                      <CountdownTimer date={event.date} />
-                      <Link to={`/events/${event._id}`} className="font-mono text-xs text-rose hover:text-rose-400 transition">Book →</Link>
-                    </div>
-                  </div>
-                </motion.div>
+          </motion.div>
+        </section>
+      )}
+
+      {/* ── Trending ── */}
+      {trending?.data?.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-amber-400">Trending</span>
+              <Link to="/events?sort=popular" className="font-mono text-[10px] uppercase tracking-wider text-gray-600 hover:text-amber-400 transition">View all</Link>
+            </div>
+            <div className="bg-surface border border-border rounded-xl p-3">
+              {trending.data.slice(0, 6).map((event) => (
+                <TrendingRow key={event._id} event={event} />
               ))}
             </div>
           </motion.div>
         </section>
       )}
 
-      {/* Stats */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+      {/* ── Stats ── */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-surface border border-border rounded-xl p-8 md:p-12"
+          className="text-center"
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { label: 'Events hosted', value: '500+' },
-              { label: 'Happy attendees', value: '50K+' },
-              { label: 'Cities covered', value: '100+' },
-              { label: 'Active organizers', value: '1K+' },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="font-display text-4xl md:text-5xl font-bold text-white tracking-display">{stat.value}</div>
-                <div className="font-mono text-xs text-gray-600 uppercase tracking-wider mt-2">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+          <p className="text-sm text-gray-500">
+            <span className="text-white font-semibold">500+</span> events hosted
+            <span className="mx-3 text-gray-800">·</span>
+            <span className="text-white font-semibold">50k+</span> happy attendees
+            <span className="mx-3 text-gray-800">·</span>
+            <span className="text-white font-semibold">100+</span> cities
+            <span className="mx-3 text-gray-800">·</span>
+            <span className="text-white font-semibold">1k+</span> organizers
+          </p>
         </motion.div>
       </section>
 
-      {/* Testimonials */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-          <div className="text-center mb-12">
-            <span className="section-eyebrow">Testimonials</span>
-            <h2 className="font-display text-3xl font-bold text-white mt-1 tracking-display">What people say</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {/* ── Testimonials ── */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-amber-400 block text-center mb-8">Voices</span>
+          <div className="grid md:grid-cols-2 gap-5">
             {[
-              { name: 'Sarah K.', role: 'Attendee', text: 'EventSphere made finding and booking events so easy. The interface is stunning!' },
-              { name: 'Mark T.', role: 'Organizer', text: 'As an organizer, the dashboard is incredible. Analytics, check-in, everything I need.' },
-              { name: 'Emily R.', role: 'Regular', text: 'I love the QR ticket system. No more paper tickets, just show my phone and go!' },
-            ].map((t) => (
-              <motion.div key={t.name} whileHover={{ y: -2 }} className="bg-surface border border-border rounded-xl p-6 card-hover">
-                <div className="flex gap-1 mb-4">
+              { name: 'Sarah K.', role: 'Attendee', text: 'Made finding and booking events so easy. The interface is beautiful — I actually enjoy browsing.' },
+              { name: 'Mark T.', role: 'Organizer', text: 'The dashboard alone is worth it. Analytics, QR check-in, ticket management — everything I need in one place.' },
+              { name: 'Emily R.', role: 'Regular', text: 'No more paper tickets. I show my phone, scan, and I\'m in. Couldn\'t be simpler.' },
+              { name: 'David L.', role: 'Event-goer', text: 'I found a underground jazz night through EventSphere that I never would have discovered otherwise.' },
+            ].map((t, i) => (
+              <motion.div key={t.name} variants={fadeUp} className="bg-surface border border-border rounded-xl p-6">
+                <div className="flex gap-1 mb-3">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <svg key={s} className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg key={s} className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   ))}
                 </div>
-                <p className="text-sm text-gray-500 leading-relaxed mb-4">"{t.text}"</p>
+                <p className="text-sm text-gray-500 leading-relaxed mb-4">&ldquo;{t.text}&rdquo;</p>
                 <div>
-                  <p className="text-sm font-medium text-white">{t.name}</p>
+                  <p className="text-xs font-medium text-white">{t.name}</p>
                   <p className="font-mono text-[10px] uppercase tracking-wider text-gray-600">{t.role}</p>
                 </div>
               </motion.div>
@@ -340,23 +303,24 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* Newsletter */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 mb-20">
+      {/* ── Newsletter ── */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 mb-20">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-surface border border-border rounded-xl p-8 md:p-12 text-center"
+          className="border-t border-border pt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
         >
-          <span className="section-eyebrow">Stay updated</span>
-          <h2 className="font-display text-3xl font-bold text-white mt-1 mb-2 tracking-display">Never miss an event</h2>
-          <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">Get the best events delivered to your inbox, every week.</p>
-          <div className="flex flex-col sm:flex-row gap-3 max-w-sm mx-auto">
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-amber-400">Stay in the loop</span>
+            <p className="text-sm text-gray-500 mt-1">The best events, delivered weekly.</p>
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
             <input
               placeholder="your@email.com"
-              className="flex-1 bg-deep border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-rose/50 transition"
+              className="flex-1 sm:w-64 bg-surface border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-amber-400/50 transition"
             />
-            <button className="gradient-btn px-6 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap">Subscribe</button>
+            <button className="gradient-btn px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap">Subscribe</button>
           </div>
         </motion.div>
       </section>
