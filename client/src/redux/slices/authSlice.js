@@ -4,7 +4,7 @@ const initialState = {
   user: null,
   accessToken: null,
   isAuthenticated: false,
-  loading: false,
+  loading: true,
 };
 
 const authSlice = createSlice({
@@ -16,11 +16,13 @@ const authSlice = createSlice({
       state.user = user;
       state.accessToken = accessToken;
       state.isAuthenticated = true;
+      state.loading = false;
     },
     logout: (state) => {
       state.user = null;
       state.accessToken = null;
       state.isAuthenticated = false;
+      state.loading = false;
     },
     setLoading: (state, action) => {
       state.loading = action.payload;

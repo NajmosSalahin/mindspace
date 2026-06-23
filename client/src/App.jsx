@@ -1,8 +1,12 @@
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import { ProtectedRoute, PublicRoute } from './routes/ProtectedRoute';
+import api from './services/axios';
+import { setCredentials, setLoading } from './redux/slices/authSlice';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -52,6 +56,37 @@ import TicketView from './pages/TicketView';
 import CertificateView from './pages/CertificateView';
 
 export default function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const hydrate = async () => {
+      try {
+        const { data } = await api.post('/auth/refresh-token');
+        if (data?.success && !cancelled) {
+          const { data: { accessToken } } = data;
+          const profileRes = await api.get('/users/me');
+          if (profileRes.data?.success && !cancelled) {
+            const u = profileRes.data.data;
+            dispatch(setCredentials({
+              user: { id: u._id, name: u.name, email: u.email, role: u.role, profileImage: u.profileImage },
+              accessToken,
+            }));
+            return;
+          }
+        }
+      } catch {
+        // Not authenticated — stay as-is
+      }
+      if (!cancelled) dispatch(setLoading(false));
+    };
+
+    hydrate();
+
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <Routes>
       <Route element={<MainLayout />}>

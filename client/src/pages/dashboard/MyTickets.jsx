@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../services/axios';
 import { formatDate, formatTime, formatCurrency } from '../../utils/formatters';
 import toast from 'react-hot-toast';
@@ -9,7 +10,7 @@ export default function MyTickets() {
   const [loading, setLoading] = useState(true);
   const [selectedQr, setSelectedQr] = useState(null);
 
-  useState(() => {
+  useEffect(() => {
     api.get('/tickets/my-tickets').then((res) => {
       setTickets(res.data.data);
       setLoading(false);
@@ -35,7 +36,7 @@ export default function MyTickets() {
         <div className="text-center py-16">
           <p className="text-4xl mb-4">🎟️</p>
           <p className="text-gray-500 mb-4">No tickets yet</p>
-          <a href="/events" className="gradient-btn px-6 py-2.5 rounded-xl text-sm font-medium inline-block">Browse Events</a>
+          <Link to="/events" className="gradient-btn px-6 py-2.5 rounded-xl text-sm font-medium inline-block">Browse Events</Link>
         </div>
       ) : (
         <div className="space-y-4">
